@@ -1,11 +1,36 @@
-// Update this page (the content is just a fallback if you fail to update the page)
 
-const Index = () => {
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import AppHeader from '@/components/layout/AppHeader';
+import LandingPage from './LandingPage';
+
+const Index: React.FC = () => {
+  const { user, loading } = useAuth();
+  
+  // Show landing page to non-authenticated users
+  if (!loading && !user) {
+    return (
+      <>
+        <AppHeader />
+        <LandingPage />
+      </>
+    );
+  }
+  
+  // Redirect logged in users to dashboard
+  if (!loading && user) {
+    return <Navigate to="/dashboard" />;
+  }
+  
+  // Loading state
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+        <div className="bg-dream/10 p-4 rounded-full mx-auto mb-4">
+          <div className="h-12 w-12 text-dream animate-pulse-gentle" />
+        </div>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     </div>
   );
