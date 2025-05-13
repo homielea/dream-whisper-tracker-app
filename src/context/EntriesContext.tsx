@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Entry, DreamEntry, EmotionEntry, Pattern } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from './AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EntriesContextType {
   dreamEntries: DreamEntry[];
@@ -31,60 +32,110 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (user) {
         setLoading(true);
         try {
-          // This will be implemented when Supabase is connected
-          // For now, we'll use dummy data
-          setDreamEntries([
-            {
-              id: '1',
-              user_id: user.id,
-              created_at: new Date().toISOString(),
-              entry_type: 'dream',
-              text: 'I was flying over a purple landscape',
-              ai_summary: 'A flying dream with purple scenery',
-              tags: ['flying', 'purple', 'landscape'],
-              insights: { clarity: 'high', lucidity: 'partial' }
-            }
-          ]);
+          // Fetch dream entries
+          const { data: dreamData, error: dreamError } = await supabase
+            .from('entries')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('entry_type', 'dream');
           
-          setEmotionEntries([
-            {
-              id: '1',
-              user_id: user.id,
-              created_at: new Date().toISOString(),
-              entry_type: 'emotion',
-              mood: 'calm',
-              text: 'Feeling relaxed today',
-              tags: ['calm', 'relaxed']
-            }
-          ]);
+          if (dreamError) throw dreamError;
+          setDreamEntries(dreamData as DreamEntry[]);
           
-          setPatterns({
-            id: '1',
-            user_id: user.id,
-            top_tags: ['flying', 'purple', 'calm'],
-            insights: { 
-              correlations: {
-                'calm': ['flying', 'clarity'],
-                'stress': ['falling', 'chase']
-              }
-            },
-            updated_at: new Date().toISOString()
-          });
-        } catch (error) {
+          // Fetch emotion entries
+          const { data: emotionData, error: emotionError } = await supabase
+            .from('entries')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('entry_type', 'emotion');
+          
+          if (emotionError) throw emotionError;
+          setEmotionEntries(emotionData as EmotionEntry[]);
+          
+          // Fetch patterns
+          const { data: patternData, error: patternError } = await supabase
+            .from('patterns')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (patternError && patternError.code !== 'PGRST116') {
+            // PGRST116 is code for no rows returned, which is expected if no patterns exist yet
+            throw patternError;
+          }
+          
+          setPatterns(patternData);
+
+        } catch (error: any) {
           console.error('Error fetching entries:', error);
           toast({
             variant: "destructive",
             title: "Failed to load entries",
-            description: "There was a problem loading your dream data.",
+            description: error.message || "There was a problem loading your dream data.",
           });
         } finally {
           setLoading(false);
         }
+      } else {
+        // No user, reset state
+        setDreamEntries([]);
+        setEmotionEntries([]);
+        setPatterns(null);
+        setLoading(false);
       }
     };
 
     fetchEntries();
   }, [user, toast]);
+
+  // Set up real-time subscription for new entries
+  useEffect(() => {
+    if (!user) return;
+    
+    const channel = supabase
+      .channel('entries-changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'entries',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        (payload) => {
+          const newEntry = payload.new as any;
+          
+          if (payload.eventType === 'INSERT') {
+            if (newEntry.entry_type === 'dream') {
+              setDreamEntries(prev => [newEntry as DreamEntry, ...prev]);
+            } else if (newEntry.entry_type === 'emotion') {
+              setEmotionEntries(prev => [newEntry as EmotionEntry, ...prev]);
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            if (newEntry.entry_type === 'dream') {
+              setDreamEntries(prev => prev.map(entry => 
+                entry.id === newEntry.id ? newEntry as DreamEntry : entry
+              ));
+            } else if (newEntry.entry_type === 'emotion') {
+              setEmotionEntries(prev => prev.map(entry => 
+                entry.id === newEntry.id ? newEntry as EmotionEntry : entry
+              ));
+            }
+          } else if (payload.eventType === 'DELETE') {
+            const oldEntry = payload.old as any;
+            if (oldEntry.entry_type === 'dream') {
+              setDreamEntries(prev => prev.filter(entry => entry.id !== oldEntry.id));
+            } else if (oldEntry.entry_type === 'emotion') {
+              setEmotionEntries(prev => prev.filter(entry => entry.id !== oldEntry.id));
+            }
+          }
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const addDreamEntry = async (text: string, voiceUrl?: string) => {
     if (!user) {
@@ -97,37 +148,33 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     try {
-      // Placeholder for Supabase entry creation
-      toast({
-        title: "Please connect Supabase",
-        description: "Saving entries requires Supabase connection",
-      });
-      
-      // In a real scenario, we would submit to Supabase and then add the returned entry
-      const mockEntry: DreamEntry = {
-        id: `temp-${Date.now()}`,
+      const newEntry = {
         user_id: user.id,
-        created_at: new Date().toISOString(),
         entry_type: 'dream',
         text,
         voice_url: voiceUrl,
-        ai_summary: 'Processing...',
-        tags: [],
-        insights: {}
       };
       
-      setDreamEntries(prev => [mockEntry, ...prev]);
+      const { data, error } = await supabase
+        .from('entries')
+        .insert([newEntry])
+        .select();
+      
+      if (error) throw error;
       
       toast({
         title: "Dream Saved",
         description: "Your dream has been recorded.",
       });
-    } catch (error) {
+
+      // Entry will be added via real-time subscription
+      
+    } catch (error: any) {
       console.error('Error adding dream entry:', error);
       toast({
         variant: "destructive",
         title: "Failed to Save Dream",
-        description: "There was a problem saving your dream entry.",
+        description: error.message || "There was a problem saving your dream entry.",
       });
     }
   };
@@ -143,35 +190,34 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     try {
-      // Placeholder for Supabase entry creation
-      toast({
-        title: "Please connect Supabase",
-        description: "Saving entries requires Supabase connection",
-      });
-      
-      // In a real scenario, we would submit to Supabase and then add the returned entry
-      const mockEntry: EmotionEntry = {
-        id: `temp-${Date.now()}`,
+      const newEntry = {
         user_id: user.id,
-        created_at: new Date().toISOString(),
         entry_type: 'emotion',
         mood,
         text,
         tags
       };
       
-      setEmotionEntries(prev => [mockEntry, ...prev]);
+      const { data, error } = await supabase
+        .from('entries')
+        .insert([newEntry])
+        .select();
+      
+      if (error) throw error;
       
       toast({
         title: "Mood Saved",
         description: "Your mood has been recorded.",
       });
-    } catch (error) {
+
+      // Entry will be added via real-time subscription
+      
+    } catch (error: any) {
       console.error('Error adding emotion entry:', error);
       toast({
         variant: "destructive",
         title: "Failed to Save Mood",
-        description: "There was a problem saving your mood entry.",
+        description: error.message || "There was a problem saving your mood entry.",
       });
     }
   };

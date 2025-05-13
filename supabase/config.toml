@@ -1,1 +1,14 @@
+
 project_id = "qbfknotnxawttujijhbb"
+
+[realtime]
+enabled = true
+
+[realtime.entries]
+enabled = true
+
+[realtime.reminders]
+enabled = true
+
+[realtime.patterns]
+enabled = true

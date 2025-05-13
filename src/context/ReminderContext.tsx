@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ReminderPreference } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from './AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReminderContextType {
   reminderPreferences: ReminderPreference[];
@@ -26,43 +27,82 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (user) {
         setLoading(true);
         try {
-          // This will be implemented when Supabase is connected
-          // For now, we'll use dummy data
-          setReminderPreferences([
-            {
-              id: '1',
-              user_id: user.id,
-              type: 'reality_check',
-              frequency: 'hourly',
-              message: 'Are you dreaming right now?',
-              enabled: true,
-              last_sent: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
-            },
-            {
-              id: '2',
-              user_id: user.id,
-              type: 'mood_check',
-              frequency: 'daily',
-              message: 'How are you feeling today?',
-              enabled: true,
-              last_sent: new Date(Date.now() - 86400000).toISOString() // 1 day ago
-            }
-          ]);
-        } catch (error) {
+          // Fetch reminders
+          const { data, error } = await supabase
+            .from('reminders')
+            .select('*')
+            .eq('user_id', user.id);
+          
+          if (error) throw error;
+          
+          // Map to ReminderPreference type
+          const reminders: ReminderPreference[] = data.map(reminder => ({
+            id: reminder.id,
+            user_id: reminder.user_id,
+            type: reminder.type,
+            frequency: reminder.frequency,
+            custom_hours: reminder.custom_hours,
+            message: reminder.message,
+            enabled: reminder.enabled,
+            last_sent: reminder.last_sent
+          }));
+          
+          setReminderPreferences(reminders);
+          
+        } catch (error: any) {
           console.error('Error fetching reminder preferences:', error);
           toast({
             variant: "destructive",
             title: "Failed to load reminders",
-            description: "There was a problem loading your reminder settings.",
+            description: error.message || "There was a problem loading your reminder settings.",
           });
         } finally {
           setLoading(false);
         }
+      } else {
+        // No user, reset state
+        setReminderPreferences([]);
+        setLoading(false);
       }
     };
 
     fetchReminderPreferences();
   }, [user, toast]);
+
+  // Set up real-time subscription for reminders
+  useEffect(() => {
+    if (!user) return;
+    
+    const channel = supabase
+      .channel('reminders-changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'reminders',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newReminder = payload.new as any;
+            setReminderPreferences(prev => [...prev, newReminder as ReminderPreference]);
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedReminder = payload.new as any;
+            setReminderPreferences(prev => prev.map(reminder => 
+              reminder.id === updatedReminder.id ? updatedReminder as ReminderPreference : reminder
+            ));
+          } else if (payload.eventType === 'DELETE') {
+            const oldReminder = payload.old as any;
+            setReminderPreferences(prev => prev.filter(reminder => reminder.id !== oldReminder.id));
+          }
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const addReminderPreference = async (preference: Omit<ReminderPreference, 'id' | 'user_id'>) => {
     if (!user) {
@@ -75,83 +115,83 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     try {
-      // Placeholder for Supabase reminder creation
-      toast({
-        title: "Please connect Supabase",
-        description: "Saving reminders requires Supabase connection",
-      });
-      
-      // In a real scenario, we would submit to Supabase and then add the returned reminder
-      const mockPreference: ReminderPreference = {
-        id: `temp-${Date.now()}`,
+      const newReminder = {
         user_id: user.id,
         ...preference
       };
       
-      setReminderPreferences(prev => [...prev, mockPreference]);
+      const { data, error } = await supabase
+        .from('reminders')
+        .insert([newReminder])
+        .select();
+      
+      if (error) throw error;
       
       toast({
         title: "Reminder Added",
         description: `Your ${preference.type} reminder has been set.`,
       });
-    } catch (error) {
+
+      // Reminder will be added via real-time subscription
+      
+    } catch (error: any) {
       console.error('Error adding reminder preference:', error);
       toast({
         variant: "destructive",
         title: "Failed to Add Reminder",
-        description: "There was a problem saving your reminder.",
+        description: error.message || "There was a problem saving your reminder.",
       });
     }
   };
 
   const updateReminderPreference = async (id: string, updates: Partial<ReminderPreference>) => {
     try {
-      // Placeholder for Supabase reminder update
-      toast({
-        title: "Please connect Supabase",
-        description: "Updating reminders requires Supabase connection",
-      });
+      const { error } = await supabase
+        .from('reminders')
+        .update(updates)
+        .eq('id', id);
       
-      // Update local state
-      setReminderPreferences(prev => 
-        prev.map(pref => pref.id === id ? { ...pref, ...updates } : pref)
-      );
+      if (error) throw error;
       
       toast({
         title: "Reminder Updated",
         description: "Your reminder has been updated.",
       });
-    } catch (error) {
+
+      // Reminder will be updated via real-time subscription
+      
+    } catch (error: any) {
       console.error('Error updating reminder preference:', error);
       toast({
         variant: "destructive",
         title: "Failed to Update Reminder",
-        description: "There was a problem updating your reminder.",
+        description: error.message || "There was a problem updating your reminder.",
       });
     }
   };
 
   const deleteReminderPreference = async (id: string) => {
     try {
-      // Placeholder for Supabase reminder deletion
-      toast({
-        title: "Please connect Supabase",
-        description: "Deleting reminders requires Supabase connection",
-      });
+      const { error } = await supabase
+        .from('reminders')
+        .delete()
+        .eq('id', id);
       
-      // Update local state
-      setReminderPreferences(prev => prev.filter(pref => pref.id !== id));
+      if (error) throw error;
       
       toast({
         title: "Reminder Deleted",
         description: "Your reminder has been deleted.",
       });
-    } catch (error) {
+
+      // Reminder will be deleted via real-time subscription
+      
+    } catch (error: any) {
       console.error('Error deleting reminder preference:', error);
       toast({
         variant: "destructive",
         title: "Failed to Delete Reminder",
-        description: "There was a problem deleting your reminder.",
+        description: error.message || "There was a problem deleting your reminder.",
       });
     }
   };

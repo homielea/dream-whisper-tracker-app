@@ -9,7 +9,105 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      entries: {
+        Row: {
+          ai_summary: string | null
+          created_at: string
+          entry_type: string
+          id: string
+          insights: Json | null
+          tags: string[] | null
+          text: string
+          user_id: string
+          voice_url: string | null
+        }
+        Insert: {
+          ai_summary?: string | null
+          created_at?: string
+          entry_type: string
+          id?: string
+          insights?: Json | null
+          tags?: string[] | null
+          text: string
+          user_id: string
+          voice_url?: string | null
+        }
+        Update: {
+          ai_summary?: string | null
+          created_at?: string
+          entry_type?: string
+          id?: string
+          insights?: Json | null
+          tags?: string[] | null
+          text?: string
+          user_id?: string
+          voice_url?: string | null
+        }
+        Relationships: []
+      }
+      patterns: {
+        Row: {
+          correlations: Json | null
+          created_at: string
+          id: string
+          top_tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          correlations?: Json | null
+          created_at?: string
+          id?: string
+          top_tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          correlations?: Json | null
+          created_at?: string
+          id?: string
+          top_tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reminders: {
+        Row: {
+          created_at: string
+          days_active: number[]
+          end_time: string
+          frequency: number
+          id: string
+          last_sent: string | null
+          start_time: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          days_active: number[]
+          end_time: string
+          frequency: number
+          id?: string
+          last_sent?: string | null
+          start_time: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          days_active?: number[]
+          end_time?: string
+          frequency?: number
+          id?: string
+          last_sent?: string | null
+          start_time?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
