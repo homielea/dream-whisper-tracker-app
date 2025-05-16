@@ -18,7 +18,7 @@ export interface EmotionEntry {
   user_id: string;
   created_at: string;
   entry_type: 'emotion';
-  mood: string;
+  mood: string; // This is not directly in the DB but we map from text or mood field
   text?: string;
   tags?: string[];
   insights?: Record<string, any>;
@@ -31,9 +31,9 @@ export interface ReminderPreference {
   user_id: string;
   type: 'reality_check' | 'mood_check';
   frequency: 'hourly' | 'daily' | 'custom';
-  days_active?: number[];
-  start_time?: string;
-  end_time?: string;
+  days_active: number[];
+  start_time: string;
+  end_time: string; 
   custom_hours?: number[];
   message: string;
   enabled: boolean;
@@ -44,7 +44,7 @@ export interface Pattern {
   id: string;
   user_id: string;
   top_tags: string[];
-  insights: Record<string, any>;
+  insights: Record<string, any>; // This maps to correlations in the database
   updated_at: string;
   created_at?: string;
 }

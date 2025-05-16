@@ -62,7 +62,8 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
           const typedEmotionEntries = emotionData.map(entry => ({
             ...entry,
             entry_type: 'emotion' as const,
-            mood: entry.mood || '' // Ensure mood field exists
+            // Add mood property if it doesn't exist in the database record
+            mood: entry.mood || (entry as any).text || '' 
           })) as EmotionEntry[];
           
           setEmotionEntries(typedEmotionEntries);
@@ -80,10 +81,10 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
           }
           
           if (patternData) {
-            // Ensure patternData has insights field
+            // Map correlations field to insights in our Pattern type
             const typedPattern = {
               ...patternData,
-              insights: patternData.insights || patternData.correlations || {}
+              insights: patternData.correlations || {}
             } as Pattern;
             
             setPatterns(typedPattern);
@@ -136,7 +137,7 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
               setEmotionEntries(prev => [{
                 ...newEntry,
                 entry_type: 'emotion' as const,
-                mood: newEntry.mood || ''
+                mood: newEntry.mood || newEntry.text || ''
               } as EmotionEntry, ...prev]);
             }
           } else if (payload.eventType === 'UPDATE') {
@@ -152,7 +153,7 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 entry.id === newEntry.id ? {
                   ...newEntry,
                   entry_type: 'emotion' as const,
-                  mood: newEntry.mood || ''
+                  mood: newEntry.mood || newEntry.text || ''
                 } as EmotionEntry : entry
               ));
             }
