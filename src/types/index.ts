@@ -21,6 +21,7 @@ export interface EmotionEntry {
   mood: string;
   text?: string;
   tags?: string[];
+  insights?: Record<string, any>;
 }
 
 export type Entry = DreamEntry | EmotionEntry;
@@ -30,6 +31,9 @@ export interface ReminderPreference {
   user_id: string;
   type: 'reality_check' | 'mood_check';
   frequency: 'hourly' | 'daily' | 'custom';
+  days_active?: number[];
+  start_time?: string;
+  end_time?: string;
   custom_hours?: number[];
   message: string;
   enabled: boolean;
@@ -42,6 +46,7 @@ export interface Pattern {
   top_tags: string[];
   insights: Record<string, any>;
   updated_at: string;
+  created_at?: string;
 }
 
 export interface User {

@@ -40,7 +40,14 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
             .eq('entry_type', 'dream');
           
           if (dreamError) throw dreamError;
-          setDreamEntries(dreamData as DreamEntry[]);
+          
+          // Type assertion to ensure proper typing
+          const typedDreamEntries = dreamData.map(entry => ({
+            ...entry,
+            entry_type: 'dream' as const
+          })) as DreamEntry[];
+          
+          setDreamEntries(typedDreamEntries);
           
           // Fetch emotion entries
           const { data: emotionData, error: emotionError } = await supabase
@@ -50,7 +57,15 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
             .eq('entry_type', 'emotion');
           
           if (emotionError) throw emotionError;
-          setEmotionEntries(emotionData as EmotionEntry[]);
+          
+          // Type assertion to ensure proper typing including mood field
+          const typedEmotionEntries = emotionData.map(entry => ({
+            ...entry,
+            entry_type: 'emotion' as const,
+            mood: entry.mood || '' // Ensure mood field exists
+          })) as EmotionEntry[];
+          
+          setEmotionEntries(typedEmotionEntries);
           
           // Fetch patterns
           const { data: patternData, error: patternError } = await supabase
@@ -64,8 +79,15 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
             throw patternError;
           }
           
-          setPatterns(patternData);
-
+          if (patternData) {
+            // Ensure patternData has insights field
+            const typedPattern = {
+              ...patternData,
+              insights: patternData.insights || patternData.correlations || {}
+            } as Pattern;
+            
+            setPatterns(typedPattern);
+          }
         } catch (error: any) {
           console.error('Error fetching entries:', error);
           toast({
@@ -106,18 +128,32 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
           
           if (payload.eventType === 'INSERT') {
             if (newEntry.entry_type === 'dream') {
-              setDreamEntries(prev => [newEntry as DreamEntry, ...prev]);
+              setDreamEntries(prev => [{
+                ...newEntry,
+                entry_type: 'dream' as const
+              } as DreamEntry, ...prev]);
             } else if (newEntry.entry_type === 'emotion') {
-              setEmotionEntries(prev => [newEntry as EmotionEntry, ...prev]);
+              setEmotionEntries(prev => [{
+                ...newEntry,
+                entry_type: 'emotion' as const,
+                mood: newEntry.mood || ''
+              } as EmotionEntry, ...prev]);
             }
           } else if (payload.eventType === 'UPDATE') {
             if (newEntry.entry_type === 'dream') {
               setDreamEntries(prev => prev.map(entry => 
-                entry.id === newEntry.id ? newEntry as DreamEntry : entry
+                entry.id === newEntry.id ? {
+                  ...newEntry,
+                  entry_type: 'dream' as const
+                } as DreamEntry : entry
               ));
             } else if (newEntry.entry_type === 'emotion') {
               setEmotionEntries(prev => prev.map(entry => 
-                entry.id === newEntry.id ? newEntry as EmotionEntry : entry
+                entry.id === newEntry.id ? {
+                  ...newEntry,
+                  entry_type: 'emotion' as const,
+                  mood: newEntry.mood || ''
+                } as EmotionEntry : entry
               ));
             }
           } else if (payload.eventType === 'DELETE') {

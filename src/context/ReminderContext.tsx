@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ReminderPreference } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
@@ -35,15 +34,23 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           
           if (error) throw error;
           
-          // Map to ReminderPreference type
+          // Map database schema to our app's ReminderPreference type
           const reminders: ReminderPreference[] = data.map(reminder => ({
             id: reminder.id,
             user_id: reminder.user_id,
-            type: reminder.type,
-            frequency: reminder.frequency,
-            custom_hours: reminder.custom_hours,
-            message: reminder.message,
-            enabled: reminder.enabled,
+            type: reminder.type as 'reality_check' | 'mood_check',
+            frequency: 'hourly', // Default value, will be overridden based on frequency number
+            days_active: reminder.days_active,
+            start_time: reminder.start_time,
+            end_time: reminder.end_time,
+            // Map numeric frequency to string format our app uses
+            ...(reminder.frequency === 1 ? { frequency: 'hourly' as const } : 
+               reminder.frequency === 24 ? { frequency: 'daily' as const } : 
+               { frequency: 'custom' as const }),
+            // These fields might need defaults or mapping
+            message: reminder.type === 'reality_check' ? 
+              'Are you dreaming right now?' : 'How are you feeling right now?',
+            enabled: true, // Default to enabled
             last_sent: reminder.last_sent
           }));
           
@@ -85,12 +92,38 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         (payload) => {
           if (payload.eventType === 'INSERT') {
             const newReminder = payload.new as any;
-            setReminderPreferences(prev => [...prev, newReminder as ReminderPreference]);
+            const mappedReminder: ReminderPreference = {
+              id: newReminder.id,
+              user_id: newReminder.user_id,
+              type: newReminder.type as 'reality_check' | 'mood_check',
+              frequency: newReminder.frequency === 1 ? 'hourly' : 
+                         newReminder.frequency === 24 ? 'daily' : 'custom',
+              days_active: newReminder.days_active,
+              start_time: newReminder.start_time,
+              end_time: newReminder.end_time,
+              message: newReminder.type === 'reality_check' ? 
+                'Are you dreaming right now?' : 'How are you feeling right now?',
+              enabled: true,
+              last_sent: newReminder.last_sent
+            };
+            setReminderPreferences(prev => [...prev, mappedReminder]);
           } else if (payload.eventType === 'UPDATE') {
             const updatedReminder = payload.new as any;
-            setReminderPreferences(prev => prev.map(reminder => 
-              reminder.id === updatedReminder.id ? updatedReminder as ReminderPreference : reminder
-            ));
+            setReminderPreferences(prev => prev.map(reminder => {
+              if (reminder.id === updatedReminder.id) {
+                return {
+                  ...reminder,
+                  type: updatedReminder.type as 'reality_check' | 'mood_check',
+                  frequency: updatedReminder.frequency === 1 ? 'hourly' : 
+                             updatedReminder.frequency === 24 ? 'daily' : 'custom',
+                  days_active: updatedReminder.days_active,
+                  start_time: updatedReminder.start_time,
+                  end_time: updatedReminder.end_time,
+                  last_sent: updatedReminder.last_sent
+                };
+              }
+              return reminder;
+            }));
           } else if (payload.eventType === 'DELETE') {
             const oldReminder = payload.old as any;
             setReminderPreferences(prev => prev.filter(reminder => reminder.id !== oldReminder.id));
@@ -115,14 +148,22 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     try {
-      const newReminder = {
+      // Convert from our app's format to database format
+      const frequencyValue = preference.frequency === 'hourly' ? 1 : 
+                            preference.frequency === 'daily' ? 24 : 1; // Default to 1 for custom
+      
+      const dbReminder = {
         user_id: user.id,
-        ...preference
+        type: preference.type,
+        frequency: frequencyValue,
+        days_active: [0, 1, 2, 3, 4, 5, 6], // Default to all days
+        start_time: '09:00:00', // Default start time
+        end_time: '21:00:00',   // Default end time
       };
       
       const { data, error } = await supabase
         .from('reminders')
-        .insert([newReminder])
+        .insert([dbReminder])
         .select();
       
       if (error) throw error;
@@ -146,9 +187,23 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const updateReminderPreference = async (id: string, updates: Partial<ReminderPreference>) => {
     try {
+      // Convert from our app's format to database format
+      const dbUpdates: any = {};
+      
+      if (updates.frequency) {
+        dbUpdates.frequency = updates.frequency === 'hourly' ? 1 : 
+                              updates.frequency === 'daily' ? 24 : 1;
+      }
+      
+      if (updates.type) {
+        dbUpdates.type = updates.type;
+      }
+      
+      // Other fields would need to be mapped here if needed
+      
       const { error } = await supabase
         .from('reminders')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id);
       
       if (error) throw error;
