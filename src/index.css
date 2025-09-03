@@ -1,4 +1,7 @@
 
+/* Noira Font Setup */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -82,6 +85,21 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 260 15% 20%;
     --sidebar-ring: 255 80% 74%;
+  }
+
+  /* Noira Typography */
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', system-ui, sans-serif;
   }
 }
 

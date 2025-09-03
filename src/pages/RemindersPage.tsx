@@ -10,8 +10,8 @@ const RemindersPage: React.FC = () => {
 
   return (
     <PageContainer 
-      title="Reality & Mood Reminders"
-      description="Set up reminders to check if you're dreaming or track your mood"
+      title="Awareness Reminders"
+      description="Build reality check habits and mindfulness throughout your day"
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-1">

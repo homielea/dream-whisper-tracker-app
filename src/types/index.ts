@@ -10,7 +10,7 @@ export interface DreamEntry {
   voice_url?: string;
   ai_summary?: string;
   tags?: string[];
-  insights?: Record<string, any>;
+  insights?: Record<string, unknown>;
 }
 
 export interface EmotionEntry {
@@ -21,7 +21,7 @@ export interface EmotionEntry {
   mood: string; // This is not directly in the DB but we map from text or mood field
   text?: string;
   tags?: string[];
-  insights?: Record<string, any>;
+  insights?: Record<string, unknown>;
 }
 
 export type Entry = DreamEntry | EmotionEntry;
@@ -44,7 +44,7 @@ export interface Pattern {
   id: string;
   user_id: string;
   top_tags: string[];
-  insights: Record<string, any>; // This maps to correlations in the database
+  insights: Record<string, unknown>; // This maps to correlations in the database
   updated_at: string;
   created_at?: string;
 }
@@ -55,5 +55,5 @@ export interface User {
   created_at: string;
   streak_days: number;
   last_entry_date?: string;
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
 }

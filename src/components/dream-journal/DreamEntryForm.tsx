@@ -69,10 +69,10 @@ const DreamEntryForm: React.FC = () => {
   };
 
   return (
-    <Card className="w-full shadow-md border border-dream-light">
-      <CardHeader className="bg-dream/5">
-        <CardTitle className="text-xl text-dream-dark">Record Your Dream</CardTitle>
-        <CardDescription>Write down your dream or record it with voice</CardDescription>
+    <Card className="w-full bg-white/70 backdrop-blur-sm border border-white/40 shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-dream-violet/5 to-aqua-glow/5">
+        <CardTitle className="text-xl font-heading text-midnight-indigo">Record Your Dream</CardTitle>
+        <CardDescription className="text-gray-600">Write down your dream or record it with voice</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 pt-6">
         <Textarea
@@ -129,10 +129,10 @@ const DreamEntryForm: React.FC = () => {
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end border-t bg-muted/20 py-3">
+      <CardFooter className="flex justify-end border-t border-gray-200/50 bg-gradient-to-r from-dream-violet/5 to-aqua-glow/5 py-3">
         <Button 
           onClick={handleSubmit}
-          className="bg-dream hover:bg-dream-dark"
+          className="bg-gradient-to-r from-dream-violet to-aqua-glow hover:from-dream-violet/80 hover:to-aqua-glow/80 text-white rounded-xl"
           disabled={!dreamText.trim() && !audioURL}
         >
           <Save className="h-4 w-4 mr-2" />

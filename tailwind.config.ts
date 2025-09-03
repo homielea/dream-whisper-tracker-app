@@ -53,12 +53,18 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Noira Brand Colors
+				'midnight-indigo': '#1A1B3A',
+				'dream-violet': '#7C4DFF', 
+				'lunar-silver': '#C9D6DF',
+				'aqua-glow': '#5CE1E6',
+				// Legacy dream colors (for compatibility)
 				dream: {
-					DEFAULT: '#9b87f5', // Dream Purple
-					light: '#E5DEFF', // Soft Purple
-					dark: '#6b5bb2', // Dark Purple
-					blue: '#D3E4FD', // Soft Blue
-					calm: '#0EA5E9', // Ocean Blue
+					DEFAULT: '#7C4DFF', // Dream Violet
+					light: '#C9D6DF', // Lunar Silver
+					dark: '#1A1B3A', // Midnight Indigo
+					blue: '#5CE1E6', // Aqua Glow
+					calm: '#5CE1E6', // Aqua Glow
 					foreground: '#FFFFFF'
 				},
 				sidebar: {
@@ -71,6 +77,12 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			fontFamily: {
+				'poppins': ['Poppins', 'system-ui', 'sans-serif'],
+				'inter': ['Inter', 'system-ui', 'sans-serif'],
+				'sans': ['Inter', 'system-ui', 'sans-serif'], // Default sans
+				'heading': ['Poppins', 'system-ui', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -119,5 +131,8 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		require("tailwindcss-animate")
+	],
 } satisfies Config;

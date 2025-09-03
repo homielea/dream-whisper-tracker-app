@@ -20,25 +20,25 @@ const StatCard: React.FC<StatCardProps> = ({
   className = ""
 }) => {
   return (
-    <Card className={`shadow-sm hover:shadow transition-shadow ${className}`}>
-      <CardHeader className="pb-2">
+    <Card className={`bg-white/70 backdrop-blur-sm border border-white/40 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/80 ${className}`}>
+      <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardTitle className="text-sm font-medium text-gray-600">
             {title}
           </CardTitle>
-          {icon && <div className="text-dream">{icon}</div>}
+          {icon && <div>{icon}</div>}
         </div>
       </CardHeader>
       <CardContent className="py-2">
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-3xl font-heading font-bold bg-gradient-to-r from-midnight-indigo to-dream-violet bg-clip-text text-transparent">{value}</div>
         {description && (
-          <CardDescription className="text-xs mt-1">
+          <CardDescription className="text-xs mt-2 text-gray-500">
             {description}
           </CardDescription>
         )}
       </CardContent>
       {footer && (
-        <CardFooter className="pt-2 border-t text-xs text-muted-foreground">
+        <CardFooter className="pt-3 border-t border-gray-200/50 text-xs text-gray-500">
           {footer}
         </CardFooter>
       )}

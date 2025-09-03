@@ -45,17 +45,17 @@ const AuthForm: React.FC = () => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg border border-dream-light">
+    <Card className="w-full max-w-md mx-auto bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl">
       <Tabs defaultValue="signin" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="signin">Sign In</TabsTrigger>
-          <TabsTrigger value="signup">Sign Up</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 bg-white/10 border border-white/20">
+          <TabsTrigger value="signin" className="text-white/70 data-[state=active]:bg-aqua-glow data-[state=active]:text-midnight-indigo font-medium">Sign In</TabsTrigger>
+          <TabsTrigger value="signup" className="text-white/70 data-[state=active]:bg-aqua-glow data-[state=active]:text-midnight-indigo font-medium">Sign Up</TabsTrigger>
         </TabsList>
         
         <TabsContent value="signin">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-dream-dark">Welcome Back</CardTitle>
-            <CardDescription className="text-center">Enter your credentials to access your dream journal</CardDescription>
+            <CardTitle className="text-2xl font-heading font-bold text-center text-white">Welcome Back</CardTitle>
+            <CardDescription className="text-center text-lunar-silver/70">Enter your credentials to access your dream journal</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -66,6 +66,7 @@ const AuthForm: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus-visible:ring-aqua-glow focus-visible:border-aqua-glow"
               />
             </div>
             <div className="space-y-2">
@@ -76,10 +77,11 @@ const AuthForm: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus-visible:ring-aqua-glow focus-visible:border-aqua-glow"
               />
             </div>
             <Button 
-              className="w-full bg-dream hover:bg-dream-dark"
+              className="w-full bg-gradient-to-r from-aqua-glow to-dream-violet hover:from-aqua-glow/80 hover:to-dream-violet/80 text-midnight-indigo font-semibold rounded-xl"
               onClick={() => handleSubmit('signIn')}
               disabled={isLoading}
             >
@@ -88,10 +90,10 @@ const AuthForm: React.FC = () => {
             
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
-                <Separator />
+                <Separator className="bg-white/20" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-white/20 px-3 py-1 rounded-full text-white/80 font-medium">Or continue with</span>
               </div>
             </div>
             
@@ -100,7 +102,7 @@ const AuthForm: React.FC = () => {
                 variant="outline" 
                 onClick={() => handleSocialSignIn('google')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 bg-white/20 border-white/30 hover:bg-white/30 text-white font-medium"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
                   <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
@@ -116,7 +118,7 @@ const AuthForm: React.FC = () => {
                 variant="outline" 
                 onClick={() => handleSocialSignIn('twitter')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 bg-white/20 border-white/30 hover:bg-white/30 text-white font-medium"
               >
                 <Twitter className="h-4 w-4" />
                 Twitter
@@ -125,7 +127,7 @@ const AuthForm: React.FC = () => {
                 variant="outline" 
                 onClick={() => handleSocialSignIn('github')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 bg-white/20 border-white/30 hover:bg-white/30 text-white font-medium"
               >
                 <Github className="h-4 w-4" />
                 GitHub
@@ -136,8 +138,8 @@ const AuthForm: React.FC = () => {
         
         <TabsContent value="signup">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-dream-dark">Create Account</CardTitle>
-            <CardDescription className="text-center">Start tracking your dreams and lucid experiences</CardDescription>
+            <CardTitle className="text-2xl font-heading font-bold text-center text-white">Create Account</CardTitle>
+            <CardDescription className="text-center text-lunar-silver/70">Start tracking your dreams and lucid experiences</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -148,6 +150,7 @@ const AuthForm: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus-visible:ring-aqua-glow focus-visible:border-aqua-glow"
               />
             </div>
             <div className="space-y-2">
@@ -158,10 +161,11 @@ const AuthForm: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus-visible:ring-aqua-glow focus-visible:border-aqua-glow"
               />
             </div>
             <Button 
-              className="w-full bg-dream hover:bg-dream-dark"
+              className="w-full bg-gradient-to-r from-aqua-glow to-dream-violet hover:from-aqua-glow/80 hover:to-dream-violet/80 text-midnight-indigo font-semibold rounded-xl"
               onClick={() => handleSubmit('signUp')}
               disabled={isLoading}
             >
@@ -170,10 +174,10 @@ const AuthForm: React.FC = () => {
             
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
-                <Separator />
+                <Separator className="bg-white/20" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-white/20 px-3 py-1 rounded-full text-white/80 font-medium">Or continue with</span>
               </div>
             </div>
             
@@ -182,7 +186,7 @@ const AuthForm: React.FC = () => {
                 variant="outline" 
                 onClick={() => handleSocialSignIn('google')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 bg-white/20 border-white/30 hover:bg-white/30 text-white font-medium"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
                   <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
@@ -198,7 +202,7 @@ const AuthForm: React.FC = () => {
                 variant="outline" 
                 onClick={() => handleSocialSignIn('twitter')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 bg-white/20 border-white/30 hover:bg-white/30 text-white font-medium"
               >
                 <Twitter className="h-4 w-4" />
                 Twitter
@@ -207,7 +211,7 @@ const AuthForm: React.FC = () => {
                 variant="outline" 
                 onClick={() => handleSocialSignIn('github')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 bg-white/20 border-white/30 hover:bg-white/30 text-white font-medium"
               >
                 <Github className="h-4 w-4" />
                 GitHub

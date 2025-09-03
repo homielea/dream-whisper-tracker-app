@@ -56,12 +56,12 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           
           setReminderPreferences(reminders);
           
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('Error fetching reminder preferences:', error);
           toast({
             variant: "destructive",
             title: "Failed to load reminders",
-            description: error.message || "There was a problem loading your reminder settings.",
+            description: (error as Error)?.message || "There was a problem loading your reminder settings.",
           });
         } finally {
           setLoading(false);
@@ -91,7 +91,7 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }, 
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            const newReminder = payload.new as any;
+            const newReminder = payload.new as ReminderPreference;
             const mappedReminder: ReminderPreference = {
               id: newReminder.id,
               user_id: newReminder.user_id,
@@ -108,7 +108,7 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             };
             setReminderPreferences(prev => [...prev, mappedReminder]);
           } else if (payload.eventType === 'UPDATE') {
-            const updatedReminder = payload.new as any;
+            const updatedReminder = payload.new as ReminderPreference;
             setReminderPreferences(prev => prev.map(reminder => {
               if (reminder.id === updatedReminder.id) {
                 return {
@@ -125,7 +125,7 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               return reminder;
             }));
           } else if (payload.eventType === 'DELETE') {
-            const oldReminder = payload.old as any;
+            const oldReminder = payload.old as ReminderPreference;
             setReminderPreferences(prev => prev.filter(reminder => reminder.id !== oldReminder.id));
           }
         }
@@ -175,7 +175,7 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       // Reminder will be added via real-time subscription
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding reminder preference:', error);
       toast({
         variant: "destructive",
@@ -188,7 +188,7 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const updateReminderPreference = async (id: string, updates: Partial<ReminderPreference>) => {
     try {
       // Convert from our app's format to database format
-      const dbUpdates: any = {};
+      const dbUpdates: Record<string, unknown> = {};
       
       if (updates.frequency) {
         dbUpdates.frequency = updates.frequency === 'hourly' ? 1 : 
@@ -215,7 +215,7 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       // Reminder will be updated via real-time subscription
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating reminder preference:', error);
       toast({
         variant: "destructive",
@@ -241,7 +241,7 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       // Reminder will be deleted via real-time subscription
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting reminder preference:', error);
       toast({
         variant: "destructive",

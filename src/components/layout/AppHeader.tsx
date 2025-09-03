@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { BookOpen, Settings, LogIn } from 'lucide-react';
+import { Moon, Settings, LogIn } from 'lucide-react';
 
 const AppHeader: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -12,8 +12,13 @@ const AppHeader: React.FC = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
         <Link to="/" className="flex items-center space-x-2">
-          <BookOpen className="h-6 w-6 text-dream" />
-          <span className="font-bold text-xl">MILD Dream Tracker</span>
+          <div className="relative">
+            <Moon className="h-6 w-6 text-dream-violet" />
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-aqua-glow rounded-full animate-pulse"></div>
+          </div>
+          <span className="font-heading font-bold text-xl bg-gradient-to-r from-dream-violet to-aqua-glow bg-clip-text text-transparent">
+            Noira
+          </span>
         </Link>
         
         <nav className="flex-1 flex items-center justify-end space-x-4">
@@ -27,6 +32,9 @@ const AppHeader: React.FC = () => {
               </Link>
               <Link to="/reminders">
                 <Button variant="ghost" size="sm">Reminders</Button>
+              </Link>
+              <Link to="/rituals">
+                <Button variant="ghost" size="sm">Rituals</Button>
               </Link>
               <Link to="/settings">
                 <Button variant="ghost" size="icon">
@@ -43,7 +51,7 @@ const AppHeader: React.FC = () => {
             </>
           ) : (
             <Link to="/auth">
-              <Button className="bg-dream hover:bg-dream-dark">
+              <Button className="bg-gradient-to-r from-dream-violet to-aqua-glow hover:from-dream-violet/80 hover:to-aqua-glow/80 text-white">
                 <LogIn className="h-4 w-4 mr-2" />
                 Sign In
               </Button>

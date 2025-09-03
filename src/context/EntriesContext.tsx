@@ -4,6 +4,7 @@ import { Entry, DreamEntry, EmotionEntry, Pattern } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { DreamAnalysisService } from '@/services/dreamAnalysis';
 
 interface EntriesContextType {
   dreamEntries: DreamEntry[];
@@ -63,7 +64,7 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
             ...entry,
             entry_type: 'emotion' as const,
             // Add mood property if it doesn't exist in the database record
-            mood: entry.mood || (entry as any).text || '' 
+            mood: entry.mood || (entry as { text?: string }).text || '' 
           })) as EmotionEntry[];
           
           setEmotionEntries(typedEmotionEntries);
@@ -89,12 +90,12 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
             
             setPatterns(typedPattern);
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('Error fetching entries:', error);
           toast({
             variant: "destructive",
             title: "Failed to load entries",
-            description: error.message || "There was a problem loading your dream data.",
+            description: (error as Error)?.message || "There was a problem loading your dream data.",
           });
         } finally {
           setLoading(false);
@@ -125,7 +126,7 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
           filter: `user_id=eq.${user.id}`
         }, 
         (payload) => {
-          const newEntry = payload.new as any;
+          const newEntry = payload.new as Entry;
           
           if (payload.eventType === 'INSERT') {
             if (newEntry.entry_type === 'dream') {
@@ -158,7 +159,7 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
               ));
             }
           } else if (payload.eventType === 'DELETE') {
-            const oldEntry = payload.old as any;
+            const oldEntry = payload.old as Entry;
             if (oldEntry.entry_type === 'dream') {
               setDreamEntries(prev => prev.filter(entry => entry.id !== oldEntry.id));
             } else if (oldEntry.entry_type === 'emotion') {
@@ -185,11 +186,27 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     try {
+      // Generate AI analysis for the dream
+      let aiSummary = '';
+      let aiTags: string[] = [];
+      
+      if (text) {
+        try {
+          const analysis = await DreamAnalysisService.analyzeDreamAsync(text);
+          aiSummary = analysis.summary;
+          aiTags = [...analysis.themes, ...analysis.emotions];
+        } catch (analysisError) {
+          console.warn('Failed to analyze dream, proceeding without AI summary:', analysisError);
+        }
+      }
+
       const newEntry = {
         user_id: user.id,
         entry_type: 'dream',
         text,
         voice_url: voiceUrl,
+        ai_summary: aiSummary,
+        tags: aiTags.length > 0 ? aiTags : undefined,
       };
       
       const { data, error } = await supabase
@@ -206,7 +223,7 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       // Entry will be added via real-time subscription
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding dream entry:', error);
       toast({
         variant: "destructive",
@@ -249,7 +266,7 @@ export const EntriesProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       // Entry will be added via real-time subscription
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding emotion entry:', error);
       toast({
         variant: "destructive",

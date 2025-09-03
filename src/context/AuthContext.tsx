@@ -62,12 +62,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         throw error;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error signing in:', error);
       toast({
         variant: "destructive",
         title: "Sign In Failed",
-        description: error.message || "Please check your credentials and try again.",
+        description: (error as Error)?.message || "Please check your credentials and try again.",
       });
       throw error;
     }
@@ -91,12 +91,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Account created",
         description: "Please check your email to confirm your account.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error signing up:', error);
       toast({
         variant: "destructive",
         title: "Sign Up Failed",
-        description: error.message || "Please check your input and try again.",
+        description: (error as Error)?.message || "Please check your input and try again.",
       });
       throw error;
     }
@@ -109,12 +109,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         throw error;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error signing out:', error);
       toast({
         variant: "destructive",
         title: "Sign Out Failed",
-        description: error.message || "An error occurred while signing out.",
+        description: (error as Error)?.message || "An error occurred while signing out.",
       });
       throw error;
     }
@@ -132,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         throw error;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error signing in with ${provider}:`, error);
       toast({
         variant: "destructive",

@@ -15,6 +15,7 @@ import DashboardPage from "./pages/DashboardPage";
 import DreamJournalPage from "./pages/DreamJournalPage";
 import MoodTrackingPage from "./pages/MoodTrackingPage";
 import RemindersPage from "./pages/RemindersPage";
+import RitualsPage from "./pages/RitualsPage";
 import SettingsPage from "./pages/SettingsPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
@@ -70,6 +71,12 @@ const AppContent = () => {
           <ProtectedRoute>
             <AppHeader />
             <RemindersPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/rituals" element={
+          <ProtectedRoute>
+            <AppHeader />
+            <RitualsPage />
           </ProtectedRoute>
         } />
         <Route path="/settings" element={

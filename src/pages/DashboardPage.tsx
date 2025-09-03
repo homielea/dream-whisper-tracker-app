@@ -7,7 +7,7 @@ import MoodEntryForm from '@/components/mood-tracking/MoodEntryForm';
 import StatCard from '@/components/dashboard/StatCard';
 import RecentEntriesList from '@/components/dashboard/RecentEntriesList';
 import TopTagsChart from '@/components/dashboard/TopTagsChart';
-import { BookOpen, Star, CalendarDays } from 'lucide-react';
+import { Moon, Star, CalendarDays, Sparkles } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -19,27 +19,27 @@ const DashboardPage: React.FC = () => {
 
   return (
     <PageContainer 
-      title={`Welcome${user?.email ? ', ' + user.email.split('@')[0] : ''}`}
-      description="Track your dreams, moods, and discover patterns"
+      title={`Welcome back${user?.email ? ', ' + user.email.split('@')[0] : ''}`}
+      description="Where night meets clarity - continue your lucid dreaming journey"
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard 
           title="Current Streak" 
           value={`${streakDays} days`}
           description="Keep recording dreams to maintain your streak"
-          icon={<CalendarDays className="h-4 w-4" />}
+          icon={<CalendarDays className="h-4 w-4 text-dream-violet" />}
         />
         <StatCard 
           title="Dreams Recorded" 
           value={dreamsRecorded}
           description="Your dream journal is growing"
-          icon={<BookOpen className="h-4 w-4" />}
+          icon={<Moon className="h-4 w-4 text-aqua-glow" />}
         />
         <StatCard 
           title="Lucid Dreams" 
           value={lucidDreams}
-          description="Dreams where you were aware you were dreaming"
-          icon={<Star className="h-4 w-4" />}
+          description="Dreams where you achieved awareness"
+          icon={<Sparkles className="h-4 w-4 text-dream-violet" />}
         />
       </div>
 
