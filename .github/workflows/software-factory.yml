@@ -1,0 +1,51 @@
+name: Software Factory
+
+on:
+  issues:
+    types: [opened, reopened]
+
+concurrency:
+  group: factory-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  implement:
+    if: >
+      github.actor == github.repository_owner &&
+      startsWith(github.event.issue.title, '[Factory]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: read
+      id-token: write
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Implement the approved factory task
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          track_progress: true
+          prompt: |
+            Implement GitHub issue #${{ github.event.issue.number }} in ${{ github.repository }}.
+
+            Treat the issue title and body as the approved scope. Read the repository
+            instructions before editing. Keep the change as small and reversible as possible.
+
+            Required outcome:
+            - work on a dedicated branch, never directly on main
+            - run npm ci, npm run lint, and npm run build
+            - fix failures caused by the change
+            - open a pull request linked to the issue
+            - summarize what changed, checks run, remaining risks, and decisions needed
+            - never merge, deploy, publish, spend money, or expose secrets
+          claude_args: |
+            --max-turns 25
+            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(npm:*),Bash(git:*),Bash(gh issue view:*),Bash(gh pr create:*),Bash(gh pr view:*)"
